@@ -1,0 +1,438 @@
+
+1)
+Want to know what OS you are running under? Check the $^O variable. 
+Under Windows it may contain "MSWin32", under Linux it simply contains "linux".
+
+2)
+Want to know how long your script has been running to the nearest second? 
+$^T contains the time your script started, so simply subtract it from the current time.
+
+$runningfor = time - $^T;
+
+Note that this is only accurate to the nearest second, so it is not much use for short lived scripts.
+
+3)
+Need a fast way of getting rid of the second half of an array? 
+Simply divide $#array by two, where array is the name of the @array.
+
+$#array /= 2;  ($#array gives the index of last element not the count #IMP#)
+
+Naturally, other arithmetic operations on $#array will work too.
+
+4)
+A quick way to set a variable to a default value if it 
+evaluates to false is to use the ||= operator.
+
+$color ||= 'black';
+
+Will set $color to black if it is empty, undefined or contains zero. 
+Otherwise it will retain its original value.
+
+5)
+One-liner to dump a hash?
+
+print "$_ = $hash{$_}\n" for (sort keys %hash);  #IMP#
+#dumpHash.pl#
+
+If you don't care whether the hash keys are sorted, remove the sort keyword.
+
+6)
+Want to assign to the next available value of an array? 
+Evaluating an array in scalar context gives the number of 
+elements in the array, and as arrays are base 0 you can write:-
+
+$array[@array] = 'What to add';
+
+Alternatively, this could be done using push:
+
+push @array, 'What to add';
+
+Which is more readable.
+
+7)
+Want to use warnings, but have some code that won't run under the pragma? 
+Simply turn them off for that bit of code by putting:-
+
+no warnings;
+
+To turn them back on, just put "use warnings;" again. This works for other pragmatic modules, including "strict".
+
+8)
+You can check the syntax of your script at the command line by typing:-
+
+perl -c yourscript.pl
+
+
+
+9)
+Need to give Perl a hint about where your module files might be? Simply do this:-
+
+use lib '/home/mymodules';
+
+
+
+10) #IMP#
+When doing a pattern match, you sometimes want to use brackets to group things, 
+but prevent them from capturing. The capturing can be stopped by putting ?: after the opening bracket, e.g.
+
+/a (?:black|grey|white) cat/
+
+
+
+11)#IMP#
+When you bind a variable to a substitution, the expression as a whole 
+will return the number of substitutions made, e.g.  #
+
+$replacements =$myvar =~s/foo/bar/g;
+
+eg:
+$ perl -e '$mvar = "foogatfoo";$replacements = $mvar =~ s/foo/bar/g; print $replacements;'
+2
+
+
+12)#IMP #INT
+Want to count the number of times $word appears in $text?
+
+my $numtimes = 0;
+$numtimes++ while ($text =~ /\b $word \b/gx));
+or
+$count++ while ($var =~/foo/gx); #for any occurances
+
+
+13)#IMP #INT
+Want to make a table of the number of times each word in $text appears?
+
+my %words = ();
+$words{lc($_)}++ for $text =~ /\b([\w']+)\b/g;
+
+Each key of the %words hash will be a word in $text, and the value is 
+the number of times that word appeared.
+
+14)#IMP
+Does your pattern look like an unreadable mess? Use the x modifier and you can put 
+spaces, newlines and comments in your pattern, and they will be ignored when the pattern is compiled.
+# matching "foobar" is critical here ...
+  $_ =~ m/foobar/;
+
+Could be rewritten, using a trailing /x modifier, as:
+
+$_ =~ m/ foobar    # matching "foobar" is critical here ...
+         /x;
+
+Now, in this example you might argue that readability wasn't improved at all; 
+that's the problem with triviality. 
+Here's another, slightly less trivial example that also illustrates the need to escape literal 
+whitespace and comment characters when using the /x modifier:
+
+$_ =~ m/^                         # anchor at beginning of line
+          The\ quick\ (\w+)\ fox    # fox adjective
+          \ (\w+)\ over             # fox action verb
+          \ the\ (\w+) dog          # dog adjective
+          (?:                       # whitespace-trimmed comment:
+            \s* \# \s*              #   whitespace and comment token
+            (.*?)                   #   captured comment text; non-greedy!
+            \s*                     #   any trailing whitespace
+          )?                        # this is all optional
+          $                         # end of line anchor
+         /x;                        # allow whitespace
+
+This regular expression successfully matches the following lines of input:
+
+The quick brown fox jumped over the lazy dog
+The quick red fox bounded over the sleeping dog
+The quick black fox slavered over the dead dog
+
+
+15) #IMP#
+Turn "ThisTextWithoutSpaces" into "This Text Without Spaces" like this:-
+
+$text =~ s/([a-z])([A-Z])/$1 $2/g;
+
+
+
+16)
+Look up the documentation on a Perl module (those installed on your system) 
+at the command line using the perldoc command, e.g.
+
+perldoc CGI
+
+#IMP
+If you are doing many pattern matches on a particular string, you may be 
+able to improve performance by having Perl study the string first, e.g.
+
+study $string;
+
+   1. Now do lots of pattern matches on $string...[/code]
+
+Another optimisation if your pattern contains a variable that will remain constant 
+is to add the "o" modifier, which only compiles the pattern the first time it is matched.
+
+
+18)#IMP
+
+Get the size of a file in bytes quickly like this:-
+
+$size = -s "path/to/file.txt";
+
+
+19)
+
+Running Windows? Got a file with UNIX line endings? Let Perl lend you hand. Drop to the console and put:-
+
+perl -ne "s/\n/\r\n/; print;" Original.txt > Fixed.txt
+
+
+
+20)Using appropriate file names.
+
+Got a chunk of obfuscated or just plain messy and hard to read Perl code? 
+The Deparse module may be able to help. It compiles, then decompiles the program it is given, 
+expanding it out and formatting it nicely. To run it at the command line, type "perl -MO=Deparse prog.pl". 
+
+Here is an example of its usage, showing the input program (red) and the output of Deparse (blue).
+
+$ cat scary.pl
+for(74,117,115,116){$::a.=chr};(($_.='qwertyui')&&
+(tr/yuiqwert/her anot/))for($::b);for($::c){$_.=$^X;
+/(p.{2}l)/;$_=$1}$::b=~/(..)$/;print("$::a$::b $::c hack$1.");
+$ perl -MO=Deparse scary.pl
+foreach $_ (74, 117, 115, 116) {
+    $a .= chr $_;
+}
+;
+$_ .= 'qwertyui' and tr/eiqrtuwy/nr oteah/ foreach ($b);
+foreach $_ ($c) {
+    $_ .= $^X;
+    /(p.{2}l)/;
+    $_ = $1;
+}
+$b =~ /(..)$/;
+print "$a$b $c hack$1.";
+
+21.)#IMP
+random integers
+ my $dilbert = int ( rand(10) ) ;
+
+22.)
+output
+when hacking some scripts it is useful to use $0 when printing out stuff, that 
+way you can figure out which scripts that generate the output if you end up 
+having scripts that use others scripts etc.
+
+ print "$0: Some output from script $0\n";
+ 
+ 
+23.)
+crypt
+Generate for example encrypted password "mypasswd" for cvs
+
+ #!/usr/bin/perl
+ 
+ my $passwd = crypt("mypasswd","dilbertwallyrandomtext");
+ 
+ print "$passwd\n";
+ 
+
+24.) #IMP# #INT
+Sorting on numberic values using comparison operator
+sort on numeric values:
+
+foreach my $drive_no (sort {$a <=> $b} keys %{$failed_host_drives->{$host}})
+#sortFiles.pl#
+http://perldoc.perl.org/functions/sort.html perl doc link for the above 
+ascending lexicographic sort:
+	@s = sort @a;  (does {$a cmp $b} implicitly)
+Ascending numeric sort:
+	@s = sort {$a <=> $b} @a;
+	
+	
+25.)
+to initialise if condition is true
+eg: assign $ret{$node}{message} if $res is not 0
+
+        $ret{$node}{message} = "Failed to notify application"
+        if( $res != 0);
+        
+26.)
+loop thru an array and assign a variable
+        foreach my $outline (@$out) {
+            if ($outline eq "User Principal : root\n") {
+                $target_identity = (split(":", $prev_line))[1];
+                chomp $target_identity;
+                last;
+            }
+            $prev_line = $outline;
+        }
+        
+
+27.) #IMP #INT @ARGV
+quote the argument(string) that was not originally quoted to avoid issue
+
+foreach (@ARGV) {
+    if ($_ =~ /&/) { # ampersand causing problem in exec wrapper (chpw call)
+        s/$_/\'$_\'/; # single quote the whole argument (word seperated by space)
+    }
+}
+
+28.)
+use List::Util qw(first);
+        my $starting_index = first { $snmp_val_output[$_] =~ /^\s+Community 1:/ } 0..$#snmp_val_output;
+        my $end_index = first { $snmp_val_output[$_] =~ /^\s+Community 2:/ } 0..$#snmp_val_output;
+        my @req_res = @snmp_val_output[$starting_index..$end_index];
+        $log->debug(Dumper \@req_res);
+        
+29.)
+Command line Oneliners one liners
+
+	replace every TAB character in a file with a comma
+	perl -pi.bak -e 's/\t/,/g' myfile.txt
+	
+	number of arguments on the command line is $#ARGV + 1
+	
+29.)	
+ # make divide-by-zero nonfatal
+eval { $answer = $a / $b; }; warn $@ if $@;
+#evalEg.pl#
+
+30.)
+epoch time
+perl -e 'print time(), "\n" '
+
+31.)
+
+use strict;
+force each variable to be declared before use by pulling in the strict module	
+
+Default die handler restored.
+	perl -d data.pl
+	
+32.) #IMP#
+if statement evaluates to boolean "false" if and only if it is one of the following:
+
+    undef
+    number 0
+    string ""
+    string "0".
+
+33.)
+In practice, when a function is claimed to return "true" it usually returns 1, 
+and when it is claimed to return false it usually returns the empty string, "".
+
+34.)
+Since a hash has no underlying order, the keys may be returned in any order. 
+Use the sort built-in function to sort the array of keys alphabetically beforehand:
+
+foreach my $key (sort keys %scientists) {
+	print $key, ": ", $scientists{$key};
+}
+
+
+35.) #IMP# #INT
+The array @INC contains the list of places that the do EXPR , require, or use constructs 
+look for their library files. It initially consists of the arguments to any -I command-line 
+switches, followed by the default Perl library, probably /usr/local/lib/perl, 
+followed by ".", to represent the current directory
+
+perl -e 'print "$_ \n" for (@INC);' #List all such paths in different row
+OR
+$ perl -e 'for (@INC) { print "$_ \n" ;}'
+
+
+36.)
+To check availibility of module
+perl -e "use Net::SNMP"
+
+37.)
+#comment.pl#
+multiple line comment
+=begin someformat
+
+This comment
+    can be indented
+        as much as I want
+
+=end someformat
+
+=cut
+
+# Important thing is this should end with =cut
+
+38.)
+Print command in perl
+print FILEHANDLE LIST
+
+here FILEHANDLE is handle to the file
+here LIST is comma seprated scalar variables or literal strings
+
+39.)
+$. gives line number while reading a file
+
+40.) #IMP# #INT
+#!/usr/bin/env bash will take care of portablity
+OR for perl
+#!/usr/bin/env perl 
+
+41.) #IMP# #INT
+Reverse/inverts key and value of an hash
+my %revhash = reverse %name;
+
+-----reverse without reverse function----
+    my $input  = "Hello world";
+    my $output = join '', map substr($input, -$_, 1), 1..length($input);
+    print $output, "\n";
+
+42.) #IMP# #INT
+Sort the hash by values of hash using comparison operator
+
+#!/usr/bin/perl
+
+my %name = (
+        jason => 23,
+        james => 25,
+        krish => 3,
+        logan => 4,
+        peter => 10,
+        carl => 20);
+
+foreach my $key (sort {$name{$a} <=> $name{$b}} (keys(%name))) {
+        print "\t$name{$key} \t\t$key\n";
+}
+
+#output:
+        3               krish
+        4               logan
+        10              peter
+        20              carl
+        23              jason
+        25              james
+
+
+43.) #IMP# #INT
+as for above below way to find second least or highest:
+my @ranks = sort{$name{$a} <=> $name{$b}} keys(%name); # {$a} <=> {$b} arrange in ascending
+
+print @ranks;
+print "\nWith second least rank $ranks[1]\n";
+
+my @marks = sort{ $name{$b} <=> $name{$a} } keys(%name); # {$b} <=> {$a} arrange in descending
+
+print "\nWith second highest marks $marks[1]\n";
+		
+44.) #IMP# #INT
+my @arr = grep {/^[^\.~]/} readdir(DIR);
+# here above to ignore file starting with . we used this [^\.~]
+^ 	- starting with
+\. 	- for dot .
+~ 	- to not match	
+
+Same to above
+my @arr = grep {!/^\./} readdir(DIR);   # ! means negation
+
+45.) #IMP
+my $multipleLines= <<'END_LONG_TEXT'; 
+This is a text. 
+Spanning over multiple lines. 
+And so it goes untill we get the delimeter again like
+END_LONG_TEXT
+
+print $longtext;
