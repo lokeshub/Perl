@@ -1,0 +1,62 @@
+1.)
+#scope.pl#
+#IMP# #INT
+my variables are lexically scoped within a single block 
+defined by {} or within the same file if not in {}s. 
+They are not accessible from packages/subroutines defined
+outside of the same lexical scope / block.
+
+#IMP# #INT
+our variables are scoped within a package/file and accessible 
+from any code that uses/requires that package/file - name conflicts 
+are resolved between packages by prepending the appropriate namespace.
+
+#IMP# #INT
+Just to round it out, local variables are "dynamically" scoped, 
+differing from my variables in that they are also accessible from 
+subroutines called within the same block.
+
+2.) #local.pl# #IMP #INT
+The "my" variable ceases to exist in inner blocks where as "local" variable is visible.
+
+3.)
+Available since Perl 5, my is a way to declare:
+
+    non-package variables, that are
+    private,
+    new,
+    non-global variables,
+    separate from any package. So that the variable cannot be accessed in the form of
+    	$package_name::variable.
+
+
+On the other hand, our variables are:
+
+    package variables, and thus automatically
+    global variables,
+    definitely not private,
+    nor are they necessarily new; and they
+    can be accessed outside the package (or lexical scope) with the qualified namespace, as 
+    	$package_name::variable. #IMP#
+
+
+Declaring a variable with "our" allows you to predeclare variables 
+in order to use them under use strict without getting typo 
+warnings or compile-time errors.
+
+4.) #IMP#
+A: my ($rows, $cols); 
+B: use vars qw($rows $cols);
+
+When declaring a variable with 'my', you say that it is lexical, that is, the variable is 
+only visible within the scope that you declared it. 
+
+If you on the other hand 'use vars', you say that "in this package I want to use variable $foo 
+without having to write out it's fully qualified name ($main::foo). $foo will NOT be lexically scoped, 
+but will be a GLOBAL (a package variable).
+
+In perl 5.6 you may also use the keyword 'our' to declare variables as globals, but with a visibility 
+scope equal to a lexical variable. A global with lexical scope ? That did sound strange :) 
+Writing 'our $foo' inside a block or subrutine will make $foo a global - but you may refer to it as $foo _only_ 
+within the lexical scope. You can still refer to $foo outside the scope, 
+but then you will have to fully qualify it as $main::foo (or $my_package::foo) 
