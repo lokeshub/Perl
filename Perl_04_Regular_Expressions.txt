@@ -1,0 +1,231 @@
+1.)
+Special variables:
+$_	The default or implicit variable.
+@_	Subroutine parameters.
+@ARGV	The command-line args.
+
+2.)#IMP
+Regular expression
+
+$true = ($foo =~ m/foo/);  #Will set $true to 1 if $foo matches the regex, or 0 if the match fails. #IMP#
+
+#regex.pl#
+#IMP#
+Match Operator Modifiers
+i 	Makes the match case insensitive
+m 	Specifies that if the string has newline or carriage
+	return characters, the ^ and $ operators will now
+	match against a newline boundary, instead of a
+	string boundary
+o 	Evaluates the expression only once
+s 	Allows use of . to match a newline character
+x 	Allows you to use white space in the expression for clarity
+g 	Globally finds all matches
+cg 	Allows the search to continue even after a global match fails
+
+
+3.)
+The Substitution Operator
+
+The substitution operator, s///, is really just an extension of the match 
+operator that allows you to replace the text matched with some new text. 
+The basic form of the operator is:
+
+s/PATTERN/REPLACEMENT/;
+
+Substitution Operator Modifiers
+
+i 	Makes the match case insensitive
+m 	Specifies that if the string has newline or carriage
+	return characters, the ^ and $ operators will now
+	match against a newline boundary, instead of a
+	string boundary
+o 	Evaluates the expression only once
+s 	Allows use of . to match a newline character
+x 	Allows you to use white space in the expression
+	for clarity
+g 	Replaces all occurrences of the found expression
+	with the replacement text
+e 	Evaluates the replacement as if it were a Perl statement,
+	and uses its return value as the replacement text
+	
+4.)
+Translation #IMP#
+$string =~ tr/a-z/A-Z/;
+#translation.pl#
+
+5.)
+More complex regular expressions #IMP#
+
+Character		Description
+.              a single character
+\s             a whitespace character (space, tab, newline)
+\S             non-whitespace character
+\d             a digit (0-9)
+\D             a non-digit
+\w             a word character (a-z, A-Z, 0-9, _)
+\W             a non-word character
+[aeiou]        matches a single character in the given set
+[^aeiou]       matches a single character outside the given set
+(foo|bar|baz)  matches any of the alternatives specified
+
+
+6.)
+Quantifiers #IMP# #INT
+
+Character            Description
+*              zero or more of the previous thing
++              one or more of the previous thing
+?              zero or one of the previous thing
+{3}            matches exactly 3 of the previous thing
+{3,6}          matches between 3 and 6 of the previous thing
+{3,}           matches 3 or more of the previous thing
+
+The ^ metacharacter matches the beginning of the string 
+and the $ metasymbol matches the end of the string.
+
+7.)#IMP# #INT
+Important 
+Match dd/mm/yyyy, requiring leading zeros:
+
+^(3[01]|[12][0-9]|0[1-9])/(1[0-2]|0[1-9])/[0-9]{4}$
+
+Here for year 0-9 four digits any 
+For month if tens place is 1 then once place can take only 0 1 or 2 hence 0[0-2]
+For day
+	if tens place is 3 then once place can be either 0 or 1 hence 3[01]
+	if tens place is 1 or 2 then once place can take any value from 0 to 9
+	if tens place is 0 then once place can take any value from 1 to 9
+
+
+8.)
+substitution
+below commands will convert
+V7R7.1.0M0 to 7.7.1.0.0
+or
+V7R7.2.0M2 to 7.7.2.0.2
+
+                    $hmcfw =~s/^[A-Z]//i;
+                    $hmcfw =~s/[A-Z]/./ig;
+                    
+9.)
+if (($string =~ /Martin Brown/) ||
+   ($string =~ /Sharon Brown/))
+
+This could be written as follows
+
+if ($string =~ /(Martin|Sharon) Brown/)
+
+10.) #IMP#
+Translation:
+tr/SEARCHLIST/REPLACEMENTLIST/cds
+The translation replaces all occurrences of the characters in SEARCHLIST with the corresponding characters in REPLACEMENTLIST.
+
+Modifier 	Description
+c 			Complement SEARCHLIST.
+d 			Delete found but unreplaced characters.
+s 			Squash duplicate replaced characters.
+
+#!/usr/bin/perl 
+
+$string = 'the cat sat on the mat.';
+$string =~ tr/a-z/b/d;
+
+print "$string\n";
+
+This will produce following result
+b b   b.
+
+11.) #IMP#
+Regular expression variables include 
+$, which contains whatever the last grouping match matched; 
+$&, which contains the entire matched string; 
+$`, which contains everything before the matched string; and 
+$', which contains everything after the matched string.
+
+#!/usr/bin/perl
+
+$string = "The food is in the salad bar";
+$string =~ m/foo/;
+print "Before: $`\n";
+print "Matched: $&\n";
+print "After: $'\n";
+
+This code prints the following when executed:
+Before: The
+Matched: foo
+After: d is in the salad bar
+
+
+12.)
+Regular expressions
+http://www.troubleshooters.com/codecorn/littperl/perlreg.htm (Complete thing)
+http://www.cs.tut.fi/~jkorpela/perl/regexp.html (with examples)
+http://www.tutorialspoint.com/perl/perl_regular_expression.htm  (match substitue translation)
+
+13.)
+expression 	matches...
+**********	*********
+abc 		abc (that exact character sequence, but anywhere in the string)
+^abc 		abc at the beginning of the string
+abc$ 		abc at the end of the string
+a|b 		either of a and b
+^abc|abc$ 	the string abc at the beginning or at the end of the string
+ab{2,4}c 	an a followed by two, three or four b’s followed by a c
+ab{2,}c 	an a followed by at least two b’s followed by a c
+ab*c 		an a followed by any number (zero or more) of b’s followed by a c
+ab+c 		an a followed by one or more b’s followed by a c
+ab?c 		an a followed by an optional b followed by a c; that is, either abc or ac
+a.c 		an a followed by any single character (not newline) followed by a c
+a\.c 		a.c exactly
+[abc] 		any one of a, b and c
+[Aa]bc 		either of Abc and abc
+[abc]+ 		any (nonempty) string of a’s, b’s and c’s (such as a, abba, acbabcacaa)
+[^abc]+ 	any (nonempty) string which does not contain any of a, b and c (such as defg)
+\d\d 		any two decimal digits, such as 42; same as \d{2}
+\w+ 		a “word”: a nonempty sequence of alphanumeric characters and low lines (underscores), such as foo and 12bar8 and foo_1
+100\s*mk 	the strings 100 and mk optionally separated by any amount of white space (spaces, tabs, newlines)
+abc\b 		abc when followed by a word boundary (e.g. in abc! but not in abcd)
+perl\B 		perl when not followed by a word boundary (e.g. in perlert but not in perl stuff)
+
+14.) #IMP#
+Regular expression matching a mac address. 3D:F2:C9:A6:B3:4F OR 3D-F2-C9-A6-B3-4F
+$str =~ /(([0-9]|[a-f]|[A-F]){2}:){5}([0-9]|[a-f]|[A-F]){2}/ 
+better
+$str =~ /{[0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/
+best
+/^([0-9a-f]{1,2}[\.:-]){5}([0-9a-f]{1,2})$/i  # takes care of A or a
+
+15.) #IMP#
+to match an IP Address
+my $range = qr/^
+(
+ (?:                               # first 3 octets:
+  (?: 2(?:5[0-5]|[0-4][0-9])\. )   # 200 - 255
+  |                                # or
+  (?: 1[0-9][0-9]\. )              # 100 - 199
+  |                                # or
+  (?: (?:[1-9][0-9]?|[0-9])\. )    # 0 - 99
+ )
+ {3}                               # above: three times
+ 
+(?:                                # 4th octet:
+ (?: 2(?:5[0-5]|[0-4][0-9]) )      # 200 - 255
+  |                                # or
+ (?: 1[0-9][0-9] )                 # 100 - 199
+  |                                # or
+ (?: [1-9][0-9]?|[0-9] )           # 0 - 99
+)
+ 
+$)
+/x;
+print "OK\n" if ($ip =~ /$range/);
+
+#(?: [0-9][0-9]? ) to (?: [1-9][0-9]?|[0-9] ) so that it won't accidently match an octet with only 2 or more zeros 
+#or an octet with leading zero (i.e. 00.0.0.0 or 192.186.0.01)
+#Now this will only match addresses from 0.0.0.0 to 255.255.255.255 (assuming the address in $ip is already chomped)
+
+	ANOTHER WAY using AND condition 
+#INT
+if ( $ip =~ /(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/ && ($1<255 && $1>192 && $2<255 && $3<255 && $4<255) 	)
+	
