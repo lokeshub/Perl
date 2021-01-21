@@ -1,0 +1,193 @@
+0.)
+A module is a text file with exactly the same syntax as a .pl perl script.
+
+#IMP# #INT
+Because a module is executed from top to bottom when it is loaded, you need to return 
+a true value at the end to show that it was loaded successfully.
+
+If module is located at /foo/bar/baz/Demo/StringUtils.pm , 
+So that the Perl interpreter can find them, directories containing Perl modules should be 
+listed in your environment variable PERL5LIB before calling perl. List the root directory 
+containing the modules, don't list the module directories or the modules themselves:
+
+export PERL5LIB=/foo/bar/baz:$PERL5LIB
+
+Now require can be used to search for and execute it during a Perl script.
+For example, calling require Demo::StringUtils causes the Perl interpreter to search each #IMP#
+directory listed in PERL5LIB in turn, looking for a file called Demo/StringUtils.pm. 
+After the module has been executed, the subroutines that were defined there suddenly become available to the main script.
+
+main.pl and read as follows:
+
+use strict;
+use warnings;
+
+require Demo::StringUtils;
+
+print zombify("i want brains"); # "r wrnt brrrns"
+
+A package is a namespace in which subroutines can be declared. 
+Any subroutine you declare is implicitly declared within the current package. 
+
+/foo/bar/baz/Demo/StringUtils.pm to read:
+
+use strict;
+use warnings;
+
+package Demo::StringUtils;
+
+sub zombify {
+	my $word = shift @_;
+	$word =~ s/[aeiou]/r/g;
+	return $word;
+}
+
+return 1;
+
+And -------modify main.pl to read:-------------
+
+use strict;
+use warnings;
+
+require Demo::StringUtils;
+
+print Demo::StringUtils::zombify("i want brains"); # "r wrnt brrrns"
+
+------------------------------------------------
+
+
+1.) #IMP#
+ * Packages are perl files with .pm extn and is considered a separate namespace. 
+ So a package is nothing but group of related scalars,arrays,hashes and subroutines for a specific purpose.
+
+    Once a package is included in a .pl file (using "use") and you want to 
+    call one of the subroutines of the package, you may have to use the 
+    scope resolution operator &package::subroutine1
+
+    #IMP#
+	* Modules are packages but which has the capabilities of exporting selective 
+    subroutines/scalars/arrays/hashes of the package to the namespace of 
+    the main package itself. So for the interpreter these look as though 
+    the subroutines are part of the main package itself and so there is 
+    no need to use the scope resolution operator while calling them. 
+
+
+2.)
+A package is a collection of code which lives in its own namespace.
+A namespace is a named collection of unique variable names (also called a symbol table).
+Namespaces prevent variable name collisions between packages.
+
+package statement switches the current naming context to a specified namespace (symbol table)
+
+$i = 1; print "$i\n"; # Prints "1"
+package foo;
+$i = 2; print "$i\n"; # Prints "2"
+package main;
+print "$i\n"; # Prints "1"
+
+#IMP#
+The package stays in effect until either another package statement 
+is invoked, or until the end of the end of the current block or file.
+
+3.)
+#IMP#
+A Perl module is a reusable package defined in a library file whose 
+name is the same as the name of the package (with a .pm on the end).
+
+Few noteable points about modules
+
+    The functions require and use will load a module.
+
+    Both use the list of search paths in @INC to find the module (you may modify it!)
+
+    ****** Both call the eval function to process the code *****
+
+    The 1; at the bottom causes eval to evaluate to TRUE (and thus not fail)
+
+The Require Function #IMP#
+----------------------
+A module can be loaded by calling the require function
+
+#!/usr/bin/perl
+
+require Foo;
+
+Foo::bar( "a" );
+Foo::blat( "b" );
+
+Notice above that the subroutine names must be 
+fully qualified (because they are isolated in their own package)
+
+It would be nice to enable the functions bar and blat to be 
+imported into our own namespace so we wouldn't have to use the Foo:: qualifier.
+
+*** This means require also loads the package but in memory
+not in our codes namespace ***
+
+The Use Function #IMP#
+-----------------
+A module can be loaded by calling the use function
+
+#!/usr/bin/perl
+
+use Foo;
+
+bar( "a" );
+blat( "b" );
+
+Notice that we didn't have to fully qualify the 
+package's function names?
+
+The use function will export a list of symbols from a module 
+given a few added statements inside a module
+	
+require Exporter;
+@ISA = qw(Exporter);
+
+Then, provide a list of symbols (scalars, lists, hashes, subroutines, etc) 
+by filling the list variable named @EXPORT: 
+For Example
+
+package Module;
+
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT = qw(bar blat);
+
+sub bar { print "Hello $_[0]\n" }
+sub blat { print "World $_[0]\n" }
+sub splat { print "Not $_[0]\n" }  # Not exported!
+
+1;
+
+
+3.)
+Modules:
+The modules in these subdirectories are loaded using the 
+subdirectory name, two colons, and the module name. 
+For example, Net::Ping or File::Basename. 
+
+4.)
+majority of Perl programmers obey the following two laws:
+
+
+    1. A Perl script (.pl file) must always contain exactly zero package declarations.
+    2. A Perl module (.pm file) must always contain exactly one package declaration, corresponding 
+    exactly to its name and location. 
+    E.g. module Demo/StringUtils.pm must begin with package Demo::StringUtils.
+
+
+5.)#IMP#
+    for inheritance...
+package Foo::Bar;
+our @ISA       = qw(Exporter);       # Tells perl what to do with...
+our @EXPORT    = qw(sub1 sub2 sub3); # automatically exported subs
+our @EXPORT_OK = qw(sub4 sub5);      # exported only when demanded
+
+# code for subs, constants, package variables here
+
+1;  # Doesn't actually have to be 1, just a 'true' value.
+
+6.)  #IMP#
+use Module;  # puts module in code name space hence gets compiled if you compile .pl file
+require Module; 	# loads only to memory so error in it are not found untill run time
