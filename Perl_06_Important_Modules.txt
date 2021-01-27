@@ -1,0 +1,197 @@
+1.)
+use Carp;
+--------
+carp works better for debugging within modules.
+Carp reports errors from the caller's perspective.
+	carp "bar";
+
+
+use Data;
+--------
+use Data::Dumper;
+print Dumper($hashRef);
+
+
+use File
+--------
+use File::Copy;
+copy("file1","file2") or die "Copy failed: $!";
+
+use IO
+------
+
+use IPC
+-------
+
+
+use Log
+use Log4pAutomation
+
+use strict #IMP#
+----------
+use strict should(must) be used when you want to force perl to code 
+properly which could be forcing declaration, being explicit on 
+strings and subs i.e. barewords or using refs with caution
+
+
+use warnings; #IMP#
+------------
+While use warnings; will help you find typing mistakes in program 
+like you missed a semicolon, you used 'elseif' and not 'elsif',
+you are using deprecated syntax or function, whatever like that.
+
+strict 	Restricts unsafe constructs
+This pragma generates compiler errors if unsafe programming is detected.
+There are three specific things that are detected: 
+
+    Symbolic references
+
+    Non-local variables (those not declared with my())and variables that aren't fully qualified.
+
+    Non-quoted words that aren't subroutine names or file handles.
+    
+
+use Fcntl;
+----------
+Basic syntax of Fcntl:
+
+use Fcntl qw(:DEFAULT :flock);
+sysopen(LF, "test.txt", O_RDONLY | O_CREAT) or die "SYSOPEN FAIL: $!";
+if(flock(LF, LOCK_EX)) { print "SUCCESS.\n"; }
+else { print "FAIL: $!\n"; }
+
+OR
+
+    use Fcntl;
+    fcntl($filehandle, F_GETFL, $packed_return_buffer) or die "can't fcntl F_GETFL: $!";
+
+OR  #IMP#
+
+use Fcntl ':flock'; # Import LOCK_* constants
+my $file = "test.txt" ;
+open(my $fh, '>>', $file) or die "Could not open '$file' - $!";
+flock($fh, LOCK_EX) or die "Could not lock '$file' - $!";
+
+--code--
+--code--
+
+flock($fh, LOCK_UN);   #To unlock from code
+
+
+use Getopt  #IMP#
+----------
+Example:
+
+        use Getopt::Long qw(GetOptions);
+        
+        my(%OptionArg) = (
+        "h" => \$h,
+        "a" => \$all,
+	"l" => \$display,
+	"i=s" => \$ip,
+	"t=s" => \$type,
+        );
+        
+	
+	my $ret_value = Getopt::Long::GetOptions(%OptionArg);
+
+        if (! $ret_value) {
+                $log->error("Failed to parse arguments");
+                
+        }        
+        
+        # $h is set to true
+        # $ip gets the value of ip_address
+        ..
+        ..
+        
+        
+2.)
+use Dumper::Data;
+print Dumper($omRef);   # $omRef is a reference otherwise use Dumper(\%hashName);
+
+
+I almost always set
+
+$Data::Dumper::Indent = 1;
+$Data::Dumper::Sortkeys = 1;
+
+with Data::Dumper. The first statement makes the output more compact 
+and much more readable when your data structure is several levels deep. 
+
+The second statement makes it easier to scan the output 
+and quickly find the keys you are most interested in
+
+
+3.) >> Test Module <<
+>> Syntax <<  #IMP#
+ok($got eq $expected, $test_name);
+#This simply evaluates any expression ($got eq $expected is just a simple example) 
+#and uses that to determine if the test succeeded or failed.
+# $test_name is a very short description of the test
+
+>> example output <<
+ok 4
+not ok 5
+ok 6
+
+>> example code <<
+
+use Test::More "no_plan";
+
+#1
+#Expect Success:Should show help messages
+
+ok (sub{
+	       
+				print("\nExecuting network -h");
+				my  @BNT=`\/opt/ibm/aixappl/pfmgt/bin/network  -h`;
+			   my $rc = $?>>8;
+				print  @BNT;
+				print ("Return code = $rc");
+				$rc == 0;
+}->(),"\nTest Name:Help Message for BNT switch\n");
+
+#2
+#IMP#
+#Expect Success:List all bnt resources
+ok(sub{
+			print("\nExecuting network -l");
+				my  @BNT=`\/opt/ibm/aixappl/pfmgt/bin/network  -l`;
+				my $rc = $?>>8;
+				print  @BNT;
+				print ("Return code = $rc");
+				$rc == 0;
+}->(),"\nTest Name:List all bnt resources\n");
+
+
+4.) #IMP#
+use XML::Simple;
+
+my $xml;
+
+$ENV{XML_SIMPLE_PREFERRED_PARSER} = "XML::Parser";
+
+    # special case for cat or gunzip ...
+    if ($inFile =~ /cat\s+(.*)\|/) {
+            $xml = XMLin($1, ForceArray => 1, SuppressEmpty => '', KeyAttr => { measType => "p", r => "p" });
+    } elsif ($inFile =~ /gunzip\s+-c\s+(.*)\.gz\|/) {
+            my $xmlFile = $1;
+            my $cmd = "gunzip $xmlFile\.gz";
+            system($cmd);
+            $xml = XMLin($xmlFile, ForceArray => 1, SuppressEmpty => '', KeyAttr => { measType => "p", r => "p" });
+            $cmd = "gzip $xmlFile";
+            system($cmd);
+    } else {
+            eval {$xml = XMLin($inFile, ForceArray => 1, SuppressEmpty => '', KeyAttr => { measType => "p", r => "p" }) };
+        if ($@) {
+            chomp ($@);
+            $log->err("parsePGW error, skipping $inFile:  $@");
+            print "parsePGW error, skipping $inFile:  $@\n";
+            return;
+        }
+    }
+    print Dumper($xml);
+	
+    # <measCollec beginTime="2012-01-31T11:45:00-05:00" />
+    my $cbt = $xml->{fileHeader}->[0]->{measCollec}->[0]->{beginTime};	
