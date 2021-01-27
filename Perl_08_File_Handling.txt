@@ -1,0 +1,138 @@
+1.)
+When you need to process small files, it's usually easier to 
+read the whole file contents in a variable; here's how to do it:
+
+-- Read the contents into an array
+
+Each row will be stored in an array element:
+
+open FILE, "<file.txt";
+@lines = <FILE>;
+
+-- Read the contents into a scalar #IMP#
+
+The whole file is stored in a single scalar variable. 
+To do this, the special variable $/ should have an undefined value 
+when reading the file.
+
+Here's one way to do it:
+
+open FILE, "<file.txt";
+$file_contents = do { local $/; <FILE> };
+
+2.)
+
+open (INFILE, $filename) or die "File name \"$filename\" does not exist! Exiting...\n";
+        my $file;
+        seek(INFILE,0,2);
+        $size = tell(INFILE);
+    print "size of file $size \n";
+        seek(INFILE,0,0);
+        $file = <INFILE>;
+        
+3.) #IMP#
+Search and replace in several files
+
+ #!/usr/bin/perl -w
+ #
+ # More scripts and tips can be found at
+ # http://www.edlin.org/
+ #
+ # Search <file1> and replace <file2> in several files
+ #
+ # I throw this file in my ~/bin/
+ # Edit the variables $search, $replace and perhaps you want to change the globbing
+ # then I jump to the directory with the files and just execute msr.pl (make sure that ~/bin is in your $PATH)
+ 
+ use strict;
+ 
+ my @infiles = glob("*.html");
+ 
+ my $search ='dilbert';
+ my $replace ='wally';
+ 
+ # Here we go.........
+ 
+ foreach my $file (@infiles){
+   print "Processing $file\n";
+   open(FH,$file) || die "Cannot load $file";
+   my @lines=<FH>;
+   close(FH);
+   my $match=0;
+   foreach my $line (@lines){
+     if($line =~ s/$search/$replace/g){
+       $match=1;
+     }
+   }
+ 
+   if($match){
+     print "...Saving $file\n";
+     open(FS,">$file") || die "Cannot save $file";
+     print FS @lines;
+     close(FS);
+   }
+ } 
+ 
+4.)
+open(DATA, "+<file.txt"); or die "Couldn't open file file.txt, $!";
+
+OR
+
+     open(my $fh, "<", "input.txt") or die "cannot open < input.txt: $!";
+
+
+Entities	Definition
+< or r 		Read Only Access
+> or w 		Creates, Writes, and Truncates
+>> or a 	Writes, Appends, and Creates
++< or r+ 	Reads and Writes
++> or w+ 	Reads, Writes, Creates, and Truncates
++>> or a+ 	Reads, Writes, Appends, and Creates
+
+5.) #IMP# Directory
+Opening the directory:
+To open the directory, we use a function called opendir. You use this much like the open function to open files. 
+In the example below, we open the /tmp directory: 
+    #!/usr/bin/perl
+    use strict;
+    use warnings;
+
+    my $directory = '/tmp';
+
+    opendir (DIR, $directory) or die $!;
+	
+To read the files and directories in the directory we use the readdir function. readdir returns the name of each 
+file or directory in the opened directory in turn when used in scalar context, or a list of the names of all 
+files and directories in that directory when used in list context. This means that we can use readdir in a 
+foreach loop (or any other loop construct):	
+    while (my $file = readdir(DIR)) {
+
+        print "$file\n";
+
+    }
+Closing the directory
+	closedir(DIR);	
+
+Example:
+#!/usr/bin/env perl
+
+my $dir = "/home/lokeshpurohit/perl/";
+
+opendir(DIR, $dir) or die $! ;
+
+foreach my $file (readdir(DIR))
+        {
+		next if ( $file =~ /^\./); # to skipp hidden directories
+        print "$file\n";
+        }
+
+close(DIR);
+
+6.)
+file names above will not have absolute paths.. to get them use map
+my @files = map { "$directory_path/$_" } readdir(DIR);
+
+#IMP# #INT
+Perl's map() function runs an expression on each element of an array, and returns a new array with the results.
+If you want to grep for a pattern & collect only those entries that match a pattern use grep {}, like this:
+my @files = grep { /pattern/ } map { "$directory_path/$_" } readdir(DIR);	
