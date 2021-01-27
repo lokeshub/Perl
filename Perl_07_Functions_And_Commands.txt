@@ -1,0 +1,121 @@
+1.)
+To call a function after importing module
+networkmodule::poweroff($poweroff[0]);  #Using double quote twice
+OR
+INVOCANT->METHOD(LIST)    #Using arrow
+
+2.) #IMP#
+Running a command
+my @args = ("san","-i",$config{"brocadeipinvalid"});
+`@args`;
+my $rc = $? >> 8;
+
+examples: #IMP#
+    `ls -l`;
+	
+    system("ls -l");  # system($command, @arguments); # You may check $! for certain errors passed to the OS by the external application.
+	system() returns the exit status of the program
+	If possible, pass your arguments as a list, rather than a single string. 
+	The output from system() is not captured.
+	
+    exec("ls -l"); # it will terminate your script upon execution
+	
+#IMP# There are also ways to run external applications through creative use of open, but this is advanced use;
+
+
+    my $files = `ls -la` — captures the output of the command in $files
+    system "touch ~/foo" — if you don't want to capture the command's output #IMP#
+    exec "vim ~/foo" — if you don't want to return to the script after executing the command  #IMP#
+    open(my $file, '|-', "grep foo"); print $file "foo\nbar" — if you want to pipe input into the command
+ 
+It's often worthwhile to do a chdir to the right directory in Perl before calling your script. i.e.  chdir "/path/to/script/";  
+
+
+3.)
+Triming Trim trim
+
+sub trim_spaces {
+    my $str = shift;
+
+    if(defined $str) {
+        my $ref = ref($str); #IMP# #INT
+        if(defined $ref and length($ref) > 0) {
+            if($ref eq 'SCALAR') {
+                $$str =~ s!^\s+!!;
+                $$str =~ s!\s+$!!;
+            } elsif ($ref eq 'ARRAY') {
+                (s!(^\s+)|(\s+$)!!g) foreach(@$str);
+            }
+        } else {
+            $str =~ s!^\s+!!;
+            $str =~ s!\s+$!!;
+            return $str;
+        }
+    }
+}
+
+4.)
+# Called to exit this program and release the lock
+
+sub exitProgram
+{
+    my $exitCode = shift;
+    $databaseHandle->rollback();
+    $databaseHandle->disconnect();
+    dropLock();
+    unlockAccount();
+    if (defined $exitCode)
+    {
+        exit $exitCode;
+    }
+    exit 0;
+}
+
+
+5.)#IMP#
+ How to convert date to unixtime in perl (or vice versa)
+# time return number of seconds since 0 in your computer (1 jan 1970) on unix
+# localtime converts unixtime to normal dates
+To convert a specific date to its corresponding unixtime, you use Time::Local, the function looks like this:
+
+      $time = timelocal($sec,$min,$hours,$mday,$mon,$year); 
+
+so to convert 3rd of Sept 2000 to unixtime, (note that jan=0,feb=1,...):
+
+  use Time::Local;
+  $time = timelocal(0,0,0,'3','08','2000');
+  
+localtime  (NOT timelocal)
+Below example
+Converts a time as returned by the time function to a 9-element list with the time analyzed for the local time zone. Typically used as follows:
+    # 0 1 2 3 4 5 6 7 8
+    ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =  localtime(time);
+  
+
+6.) #IMP#
+Command to remove files cnumDays older
+my $cmd="/bin/nice /usr/bin/find $dir -type f -mtime +$cnumDays -exec rm -f {} \\; &";
+system($cmd);
+
+7.)
+command to check if a perl module is installed 
+perl -e "use Net::SNMP"
+
+8.)
+command to list packages
+sudo apt-cache pkgnames
+command to update packages
+sudo apt-get update
+command to see details of a package
+sudo apt-cache show netcat
+command to install a package from CPAN
+sudo apt-get install nmap
+
+9.)
+flock command .. example: 
+use Fcntl ':flock'; # Import LOCK_* constants
+
+open(MYFILE, ">>$myfile") || die;
+flock(MYFILE, 2) || die;
+print MYFILE "Cottleston Pie\n";
+close(MYFILE);
