@@ -1,0 +1,38 @@
+1.)
+Database connectivity thru perl:
+--------------------------------
+# Define variables to connect to the database
+my $username = $ENV{DBUSER};
+my $password = $ENV{PASSWORD};
+my $db       = $ENV{DATABASE};
+
+# Connect to the database
+eval 
+{
+   $databaseHandle = DBI->connect("dbi:Oracle:$db", $username, $password)||die ("Database connection not made");
+   $databaseHandle->{AutoCommit} = 0;
+}
+if ($@)
+{
+    print "Error occurred:".$@."\n";
+    exitProgram();
+}
+
+# take an array variable
+   my @row;
+   
+# This subroutine executes the select statement   
+   my $statementHandle = $databaseHandle->prepare($selectSystemconfig);
+   $statementHandle->execute();
+   
+   while (@row = $statementHandle->fetchrow)
+    {
+        push(@subSystem,$row[0]);
+        push(@parameter,$row[1]);
+        push(@stringVal,$row[2]);
+		$rowCount++;
+    }
+    
+    $statementHandle->finish();
+
+    displayConfig(@subSystem, @parameter ,@stringVal); 
