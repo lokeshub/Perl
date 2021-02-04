@@ -1,0 +1,295 @@
+0.) OOPS concepts  #IMP#
+	<to understand oops first have to understand refrences and anonymous datatypes>
+	To create hard references :
+	$array = \@ARGV;
+	$hash = \%ENV;
+	$glob = \*STDOUT;
+	
+	for scalar
+	$foo = 'Bill';
+	$fooref = \$foo;
+	
+	for subroutine
+	sub foo { print "foo" };
+	$foosub = \&foo;
+	
+	for anonymous array
+	$array = [ 'Bill', 'Ben, 'Mary' ];
+	
+	for anonymous hashes
+	$hash = { 'Man' => 'Bill',
+          'Woman' => 'Mary,
+          'Dog' => 'Ben'
+	};
+	
+	The most direct way of dereferencing a reference is to prepend the corresponding 
+	data type character ($ for scalars, @ for arrays, % for hashes, and & for subroutines) 
+	that you are expecting in front of the scalar variable containing the reference
+	
+	example:
+	$array = \@ARGV;     # Create reference to array
+	$hash = \%ENV;       # Create reference to hash
+	$glob = \*STDOUT;    # Create reference to typeglob
+	$foosub = \&foo;     # Create reference to subroutine
+	
+	push (@$array, "From humans");
+	$$array[0] = 'Hello'
+	$$hash{'Hello'} = 'World';
+	&$foosub;
+	print $glob "Hello World!\n";
+	
+	-----Object Basics-----
+	<an object> is merely a reference to a data type that knows what class it belongs to. 
+	The object is stored as a reference in a scalar variable. Because a scalar only contains 
+	a reference to the object, 	the same scalar can hold different objects in different classes.
+	
+	<class> A class within Perl is a package that contains the corresponding methods required to 
+	create and manipulate objects.
+	
+	<method> A method within Perl is a subroutine, defined with the package. 
+	The first argument to the method is an object reference or a package name, 
+	depending on whether the method affects the current object or the class.
+	
+	Perl provides a bless() function which is used to return a reference and which becomes an object.
+	
+	To declare a class named Person in Perl we do:
+	package Person;
+	
+	The scope of the package definition extends to the end of the file, or until another package keyword is encountered.
+	
+	***Creating and Using Objects***
+	To create an instance of a class (an object) we need an object constructor. 
+	This constructor is a method defined within the package. Most programmers choose to name 
+	this object constructor method new, but in Perl one can use any name.
+
+	One can use any kind of Perl variable as an object in Perl. Most Perl programmers 
+	choose either references to arrays or hashes.	
+	When creating an object, you need to supply a constructor. 
+	This is a subroutine within a package that returns an object reference. 
+	The object reference is created by blessing a reference to the package's class. For example:
+	
+	package Person;
+	sub new
+	{
+		my $class = shift;
+		my $self = {
+			_firstName => shift,
+			_lastName  => shift,
+			_ssn       => shift,
+		};
+		# Print all the values just for clarification.
+		print "First Name is $self->{_firstName}\n";
+		print "Last Name is $self->{_lastName}\n";
+		print "SSN is $self->{_ssn}\n";
+		bless $self, $class;
+		return $self;
+	}
+	------------------------------------------------------------------------
+	Now Let us see how to create an Object
+
+	$object = new Person( "Mohammad", "Saleem", 23234345);
+	
+	------------------------------------------------------------------------
+
+	can use simple hash in your consturctor if you don't want to assign any value to any class variable. For example
+
+	package Person;
+	sub new
+	{
+		my $class = shift;
+		my $self = {};
+		bless $self, $class;
+		return $self;
+	}
+
+	Defining Methods
+	-----------------
+	#Lets define a helper method to get person first name:
+
+	sub getFirstName {
+		return $self->{_firstName};
+	}
+	
+	#Another helper function to set person first name:
+
+	sub setFirstName {
+		my ( $self, $firstName ) = @_;
+		$self->{_firstName} = $firstName if defined($firstName);
+		return $self->{_firstName};
+	}
+	
+	#Now lets have a look into complete example: Keep Person package and helper functions into Person.pm file
+	
+	#let's make use of Person object in employee.pl file as follows:
+	
+	#!/usr/bin/perl
+
+	use Person;
+
+	$object = new Person( "Mohammad", "Saleem", 23234345);
+	# Get first name which is set using constructor.
+	$firstName = $object->getFirstName();
+
+	print "Before Setting First Name is : $firstName\n";
+
+	# Now Set first name using helper function.
+	$object->setFirstName( "Mohd." );
+
+	# Now get first name set by helper function.
+	$firstName = $object->getFirstName();
+	print "Before Setting First Name is : $firstName\n";
+
+	
+	Inheritance #IMP# #INT
+	------------
+	Perl has a special variable, @ISA, to help with this. @ISA governs (method) inheritance. 
+	
+	Following are important points to be considered while using inheritance:
+
+	Perl searches the class of the specified object for the given method or attribute ie. variable.
+
+		-Perl searches the classes defined in the object class's @ISA array.
+
+		-If no method is found in steps 1 or 2, then Perl uses an AUTOLOAD subroutine, if one is found in the @ISA tree.
+
+		-If a matching method still cannot be found, then Perl searches for the method within the UNIVERSAL class (package) that comes as part of the 
+		standard Perl library.
+
+		-If te method still has not found, then Perl gives up and raises a runtime exception.
+
+
+	#to create a new Employee class that will inherit methods and attributes from our Person class, 
+	#we simply code as follows: Keep this code into Employee.pm
+	
+	#!/usr/bin/perl
+
+	package Employee;
+	use Person;
+	use strict;
+	our @ISA = qw(Person);    # inherits from Person
+	
+	Now Employee Class has all the methods and attributes inherited from Person class and you can use them as follows: Use main.pl file to test it
+
+	#!/usr/bin/perl
+
+	use Employee;
+
+	$object = new Employee( "Mohammad", "Saleem", 23234345);
+	# Get first name which is set using constructor.
+	$firstName = $object->getFirstName();
+
+	print "Before Setting First Name is : $firstName\n";
+
+	# Now Set first name using helper function.
+	$object->setFirstName( "Mohd." );
+
+	# Now get first name set by helper function.
+	$firstName = $object->getFirstName();
+	print "After Setting First Name is : $firstName\n";
+	
+	# Method Overriding <advanced.. can be left for now>	
+	
+	Default Autoloading
+	--------------------
+	Perl offers a feature which you would not find in many other programming languages: 
+	a default subroutine. Which means, if you define a function called AUTOLOAD() 
+	then any calls to undefined subroutines will call AUTOLOAD() function automatically. 
+	The name of the missing subroutine is accessible within this subroutine as $AUTOLOAD.
+	
+	------------------------
+	A destructor method is simply a member function (subroutine) named DESTROY, 
+	which will be called automatically in following cases:
+
+		When the object reference's variable goes out of scope.
+
+		When the object reference's variable is undef-ed.
+
+		When the script terminates
+
+		When the perl interpreter terminates
+
+1.)
+ Constructors are static methods that happen to return objects:
+
+package Student;
+sub new {
+    my($class, $name) = @_;        # Class name is in the first parameter
+    my $self = { name => $name };  # Anonymous hash reference holds instance attributes
+    bless($self, $class);          # Say: $self is a $class
+    return $self;
+}
+
+package main;
+use Student;
+my $amy = Student->new('Amy');
+print $amy->{name}; # Accessing an attribute
+
+2.)
+Based on environment variable
+--------------------------------
+    my $pl_ignore_prevalidations = $ENV{PL_IGNORE_PREVALIDATION};
+    if( defined $pl_ignore_prevalidations and $pl_ignore_prevalidations =~ /^Yes$/i ) {
+       $log->debug("ENV : PL_IGNORE_PREVALIDATION( $pl_ignore_prevalidations ) is valid, So ignoring prevalidation checks");
+    } else {
+        if( !defined $pl_ignore_prevalidations ) {
+           $log->debug("ENV : PL_IGNORE_PREVALIDATION is not defined, So proceeding prevalidation checks..");
+        } else {
+           $log->debug("ENV : PL_IGNORE_PREVALIDATION( $pl_ignore_prevalidations ) is invalid, So proceeding prevalidation checks..");
+        }
+        
+
+3.)
+to print environment variables
+print "$ENV{'HOSTNAME'}\n;
+
+4.) #IMP#
+To export functions, you need the Exporter module. Add the following lines to the beginning of code in the package:
+
+    require Exporter;
+    @ISA = qw(Exporter);
+
+These two lines force the inclusion of the Exporter.pm module and then set the @ISA array with the name of the Exporter class to look for.
+To export your own class's methods, you list them in the @EXPORT array. 
+For example, to export the closeMain and declareMain methods, you use the following statement:
+
+    @EXPORT(declareMain, closeMain);
+
+Inheritance in a Perl class is through the @ISA array. The @ISA array does not have to be defined 
+in every package; however, when it is defined, Perl treats it as a special array of directory names. 
+This array is similar to the @INC array, where directories are searched for files to include. 
+The @ISA array contains the names of the classes (packages) to look for methods in other classes in if a 
+method in the current package is not found. 
+The @ISA array contains the names of the base classes from which the current class inherits. #IMP#
+The search is done in the order that the classes are listed in the @ISA arrays.
+
+All methods called by a class must belong to the same class or the base classes defined in the @ISA array. 
+If a method isn't found in the @ISA array, Perl looks for an AUTOLOAD() routine. 
+This optional routine is defined as sub in the current package. 
+To use the AUTOLOAD function, you call the autoload.pm package with the use Autoload; statement. 
+The AUTOLOAD function tries to load the called function from the installed Perl libraries. 
+If the AUTOLOAD call also fails, Perl makes one final try at the UNIVERSAL class, which is the catch-all 
+for all methods not defined elsewhere. Perl generates an error about unresolved functions if this step also fails. 
+
+5.) Difference between other OOPs lang and Perl
+#IMP# Traditional languages have a named variable and it the location that the variable points to you'll find the value 
+that the variable holds. Perl 5 is a "traditional" language in that sense. Languages that are described as "fully object oriented" 
+hold their information in variables that are pointed to (or referenced by) the name
+	example:
+@graham = ("Perl","PHP","Python");
+@current = @graham;
+$current[1] = "Tcl/tk";
+
+print "@current\n";
+print "@graham\n";
+#We run that in Perl and we have changed @current but NOT @graham: 
+
+The code in Python reads like this:
+
+graham = ["Perl","PHP","Python"]
+current = graham
+current[1] = "Tcl/tk"
+
+print current
+print graham
+
+#And when run you'll find that the data has changed under both names
